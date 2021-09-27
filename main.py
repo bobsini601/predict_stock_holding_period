@@ -22,8 +22,12 @@ stk_bnc_hist = load_CSV('stk_bnc_hist.csv')  # 국내 주식 잔고 이력 _일�
 stk_hld_test = load_CSV('stk_hld_test.csv')  # 국내 주식 보유 기간(train) _고객에게 제공되는 과거 국내주식 보유기간 데이터 (681,472건)
 stk_hld_train = load_CSV('stk_hld_train.csv')  # 국내 주식 보유 기간(test) _개발한 알고리즘 검증을 위한 문제지 (70,596건)
 
-print(stk_bnc_hist.dtypes)
 
+''' 필요없는 컬럼 추출 '''
+iem_info.drop(['iem_krl_nm'], axis=1, inplace=True) # '종목 한글 명' 삭제
+
+
+''' 일부 컬럼을 빼서 정규화 시키고 다시 결합해서 원상태의 컬럼으로 결합 '''
 # 정규화할 컬럼 추출
 bnc_hist_norm = stk_bnc_hist[['bnc_qty', 'tot_aet_amt', 'stk_par_pr']]
 stk_bnc_hist.drop(['bnc_qty', 'tot_aet_amt', 'stk_par_pr'], axis=1, inplace=True)
@@ -35,15 +39,12 @@ bnc_hist_norm = transformer.transform(bnc_hist_norm)
 
 bnc_hist_norm = pd.DataFrame(bnc_hist_norm)
 bnc_hist_norm.columns = (['bnc_qty', 'tot_aet_amt', 'stk_par_pr'])  # 컬럼에 레이블명 지정
-print(bnc_hist_norm)
 
-# 정규화한 컬럼을 기존 DataFrame과 수평 결합 -> 일부 컬럼을 빼서 정규화 시키고 다시 결합해서 원상태의 컬럼으로 결합
+# 정규화한 컬럼을 기존 DataFrame과 수평 결합
 stk_bnc_hist = pd.concat([stk_bnc_hist, bnc_hist_norm], axis=1)
-print(stk_bnc_hist)
 
 
 ''' csv파일 결합 : cus_info + stk_bnc_hist + iem_info '''
-
 # act_id를 기준으로 stk_bnc_hist, cus_info 결합
 merge_cus_info=pd.merge(cus_info,stk_bnc_hist ,on='act_id')
 
@@ -56,23 +57,21 @@ merge_data=pd.merge(merge_cus_info,iem_info,on='iem_cd')
 train_df=pd.DataFrame(merge_data)
 train_df.to_csv("merge_data.csv",index=False)
 
-
-
-'''train data와 test data 각각 merge_info와 결합 '''
+''' train data와 test data 각각 merge_info와 결합 '''
 # 계좌ID를 기준으로 train data를 결합
 merge_train=pd.merge(merge_data,stk_hld_train,on='act_id')
 
 # 계좌ID를 기준으로 test data를 결합
 merge_test = pd.merge(merge_data,stk_hld_test, on='act_id')
 
-'''
+
 # 결합한 train data를 csv파일로 저장
 train_df=pd.DataFrame(merge_train)
-train_df.to_csv("train_data.csv",index=False)
+#train_df.to_csv("train_data.csv",index=False)
 
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
-test_df.to_csv("test_data.csv",index=False)
-'''
-batch_size = 1000 #대량의 data를 처리하기 위한 mini batch
+#test_df.to_csv("test_data.csv",index=False)
+
+batch_size = 1000 # 대량의 data를 처리하기 위한 mini batch
