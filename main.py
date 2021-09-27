@@ -48,30 +48,40 @@ stk_bnc_hist = pd.concat([stk_bnc_hist, bnc_hist_norm], axis=1)
 # act_id를 기준으로 stk_bnc_hist, cus_info 결합
 merge_cus_info=pd.merge(cus_info,stk_bnc_hist ,on='act_id')
 
-train_df=pd.DataFrame(merge_cus_info)
-train_df.to_csv("merge_cus_info.csv",index=False)
+mcf_df=pd.DataFrame(merge_cus_info)
+#train_df.to_csv("merge_cus_info.csv",index=False)
+print("MCF_DF")
+print(mcf_df)
 
-# iem_id를 기준으로 iem_info까지 결합 _ 총 3개 csv파일 결합
+# iem_cd를 기준으로 iem_info까지 결합 _ 총 3개 csv파일 결합
 merge_data=pd.merge(merge_cus_info,iem_info,on='iem_cd')
 
-train_df=pd.DataFrame(merge_data)
-train_df.to_csv("merge_data.csv",index=False)
+merge_df=pd.DataFrame(merge_data)
+#test_df.to_csv("merge_data.csv",index=False)
+print("M_DF")
+print(merge_df)
+
 
 ''' train data와 test data 각각 merge_info와 결합 '''
 # 계좌ID를 기준으로 train data를 결합
-merge_train=pd.merge(merge_data,stk_hld_train,on='act_id')
+merge_train=pd.merge(merge_data,stk_hld_train,on=['act_id','iem_cd'])
 
 # 계좌ID를 기준으로 test data를 결합
-merge_test = pd.merge(merge_data,stk_hld_test, on='act_id')
+merge_test = pd.merge(merge_data,stk_hld_test, on=['act_id','iem_cd'])
 
 
 # 결합한 train data를 csv파일로 저장
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
-
+print("TRAIN_DF")
+print(train_df)
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
 #test_df.to_csv("test_data.csv",index=False)
+print("TEST_DF")
+print(test_df)
 
 batch_size = 1000 # 대량의 data를 처리하기 위한 mini batch
+
+
