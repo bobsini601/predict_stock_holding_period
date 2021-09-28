@@ -64,13 +64,14 @@ print(merge_df)
 
 
 ''' train data와 test data 각각 merge_info와 결합 '''
-# 계좌ID를 기준으로 train data를 결합
+# 계좌ID, 종목코드를 기준으로 train data를 결합
 merge_train=pd.merge(merge_data,stk_hld_train, how="right",left_on=['act_id','iem_cd'],right_on=['act_id','iem_cd'])
-
+merge_train=merge_train[merge_train["byn_dt"]==merge_train["bse_dt"]]
 #merge_train=pd.merge(merge_data,stk_hld_train,on=['act_id','iem_cd'])
 
-# 계좌ID를 기준으로 test data를 결합
+# 계좌ID, 종목코드를 기준으로 test data를 결합
 merge_test = pd.merge(merge_data,stk_hld_test, how="right",left_on=['act_id','iem_cd'],right_on=['act_id','iem_cd'])
+merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 #merge_test=pd.merge(merge_data,stk_hld_test,on=['act_id','iem_cd'])
 
 
