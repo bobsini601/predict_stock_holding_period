@@ -21,7 +21,8 @@ iem_info = load_CSV('iem_info_20210902.csv')  # 종목 정보 _주식 종목에 
 stk_bnc_hist = load_CSV('stk_bnc_hist.csv')  # 국내 주식 잔고 이력 _일별 종목 잔고수량 및 금액, 액면가 정보
 stk_hld_test = load_CSV('stk_hld_test.csv')  # 국내 주식 보유 기간(train) _고객에게 제공되는 과거 국내주식 보유기간 데이터 (681,472건)
 stk_hld_train = load_CSV('stk_hld_train.csv')  # 국내 주식 보유 기간(test) _개발한 알고리즘 검증을 위한 문제지 (70,596건)
-
+print(stk_hld_train)
+print(stk_hld_test)
 
 ''' 필요없는 컬럼 추출 '''
 iem_info.drop(['iem_krl_nm'], axis=1, inplace=True) # '종목 한글 명' 삭제
@@ -64,10 +65,13 @@ print(merge_df)
 
 ''' train data와 test data 각각 merge_info와 결합 '''
 # 계좌ID를 기준으로 train data를 결합
-merge_train=pd.merge(merge_data,stk_hld_train,on=['act_id','iem_cd'])
+merge_train=pd.merge(merge_data,stk_hld_train, how="right",left_on=['act_id','iem_cd'],right_on=['act_id','iem_cd'])
+
+#merge_train=pd.merge(merge_data,stk_hld_train,on=['act_id','iem_cd'])
 
 # 계좌ID를 기준으로 test data를 결합
-merge_test = pd.merge(merge_data,stk_hld_test, on=['act_id','iem_cd'])
+merge_test = pd.merge(merge_data,stk_hld_test, how="right",left_on=['act_id','iem_cd'],right_on=['act_id','iem_cd'])
+#merge_test=pd.merge(merge_data,stk_hld_test,on=['act_id','iem_cd'])
 
 
 # 결합한 train data를 csv파일로 저장
