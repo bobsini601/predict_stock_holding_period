@@ -1,6 +1,7 @@
 import pandas as pd  # 데이터를 로드하기 위한 라이브러리
 import numpy as np
-#import tensorflow as tf
+from tensorflow.python.keras.models import Sequential, InputLayer
+from tensorflow.python.keras.layers import Dense, Activation
 from matplotlib import pyplot as plt  # plotting 하기 위한 라이브러리
 from sklearn import preprocessing  # 데이터를 전처리하기 위한 라이브러리
 import sys, os
@@ -21,11 +22,11 @@ iem_info = load_CSV('iem_info_20210902.csv')  # 종목 정보 _주식 종목에 
 stk_bnc_hist = load_CSV('stk_bnc_hist.csv')  # 국내 주식 잔고 이력 _일별 종목 잔고수량 및 금액, 액면가 정보
 stk_hld_test = load_CSV('stk_hld_test.csv')  # 국내 주식 보유 기간(train) _고객에게 제공되는 과거 국내주식 보유기간 데이터 (681,472건)
 stk_hld_train = load_CSV('stk_hld_train.csv')  # 국내 주식 보유 기간(test) _개발한 알고리즘 검증을 위한 문제지 (70,596건)
-print(stk_hld_train)
-print(stk_hld_test)
+
 
 ''' 필요없는 컬럼 추출 '''
 iem_info.drop(['iem_krl_nm'], axis=1, inplace=True) # '종목 한글 명' 삭제
+
 
 
 ''' 일부 컬럼을 빼서 정규화 시키고 다시 결합해서 원상태의 컬럼으로 결합 '''
@@ -51,16 +52,14 @@ merge_cus_info=pd.merge(cus_info,stk_bnc_hist ,on='act_id')
 
 mcf_df=pd.DataFrame(merge_cus_info)
 #train_df.to_csv("merge_cus_info.csv",index=False)
-print("MCF_DF")
-print(mcf_df)
+
 
 # iem_cd를 기준으로 iem_info까지 결합 _ 총 3개 csv파일 결합
 merge_data=pd.merge(merge_cus_info,iem_info,on='iem_cd')
 
 merge_df=pd.DataFrame(merge_data)
 #test_df.to_csv("merge_data.csv",index=False)
-print("M_DF")
-print(merge_df)
+
 
 
 ''' train data와 test data 각각 merge_info와 결합 '''
@@ -78,15 +77,23 @@ merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 # 결합한 train data를 csv파일로 저장
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
-print("TRAIN_DF")
-print(train_df)
+
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
 #test_df.to_csv("test_data.csv",index=False)
-print("TEST_DF")
-print(test_df)
-
-batch_size = 1000 # 대량의 data를 처리하기 위한 mini batch
 
 
+b_size = 1000 # 대량의 data를 처리하기 위한 mini batch
+#X=merge_train
+#Y=merge_train[:,1]
+
+ai_model = Sequential([
+            InputLayer(input_shape=(22,)),
+            Dense(15, activation='relu', name='hidden_layer'),
+            Dense(1, activation='sigmoid', name='output_layer')]
+            )
+'''
+ai_model.compile(loss='binary_crossentropy',optimizer='RMSprop',metrics=['accuracy'])
+ai_res = ai_model.fit(X,Y,epochs=100,batch_size=2000)
+'''
