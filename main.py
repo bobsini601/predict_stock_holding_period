@@ -78,10 +78,6 @@ merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
 
-# hold_d 분리
-y_train = train_df[['hold_d']]
-x_train = train_df.drop(['hold_d'],axis=1)
-
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
@@ -89,15 +85,16 @@ test_df = pd.DataFrame(merge_test)
 
 
 b_size = 1000 # 대량의 data를 처리하기 위한 mini batch
-#X=merge_train
-#Y=merge_train[:,1]
+
+# hold_d 분리
+y_train = train_df[['hold_d']]
+x_train = train_df.drop(['hold_d'],axis=1)
 
 ai_model = Sequential([
-            InputLayer(input_shape=(22,)),
-            Dense(15, activation='relu', name='hidden_layer'),
+            InputLayer(input_shape=(19,)),
+            Dense(8, activation='relu', name='hidden_layer'),
             Dense(1, activation='sigmoid', name='output_layer')]
             )
-'''
+
 ai_model.compile(loss='binary_crossentropy',optimizer='RMSprop',metrics=['accuracy'])
-ai_res = ai_model.fit(X,Y,epochs=100,batch_size=2000)
-'''
+ai_res = ai_model.fit(x_train,y_train,epochs=100,batch_size=b_size)
