@@ -78,6 +78,10 @@ merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
 
+# hold_d 분리
+y_train = train_df[['hold_d']]
+x_train = train_df.drop(['hold_d'],axis=1)
+
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
