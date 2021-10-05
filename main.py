@@ -89,7 +89,7 @@ b_size = 60000 # 대량의 data를 처리하기 위한 mini batch
 # hold_d 분리
 y_train = train_df[['hold_d']]
 x_train = train_df.drop(['hold_d','iem_cd','act_id'],axis=1)
-x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=True)
+x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.25, random_state=True)
 print(len(x_train), len(x_val), len(y_train), len(y_val))
 
 ai_model = Sequential([
