@@ -1,9 +1,10 @@
 import pandas as pd  # 데이터를 로드하기 위한 라이브러리
 import numpy as np
 from tensorflow.python.keras.models import Sequential, InputLayer
-from tensorflow.python.keras.layers import Dense, Activation
+from tensorflow.python.keras.layers import Dense, Dropout, Activation
 from matplotlib import pyplot as plt  # plotting 하기 위한 라이브러리
 from sklearn import preprocessing  # 데이터를 전처리하기 위한 라이브러리
+from sklearn.model_selection import train_test_split
 import sys, os
 
 sys.path.append(os.pardir)
@@ -26,7 +27,6 @@ stk_hld_train = load_CSV('stk_hld_train.csv')  # 국내 주식 보유 기간(tes
 
 ''' 필요없는 컬럼 추출 '''
 iem_info.drop(['iem_krl_nm'], axis=1, inplace=True) # '종목 한글 명' 삭제
-
 
 
 ''' 일부 컬럼을 빼서 정규화 시키고 다시 결합해서 원상태의 컬럼으로 결합 '''
@@ -84,17 +84,20 @@ test_df = pd.DataFrame(merge_test)
 #test_df.to_csv("test_data.csv",index=False)
 
 
-b_size = 1000 # 대량의 data를 처리하기 위한 mini batch
+b_size = 60000 # 대량의 data를 처리하기 위한 mini batch
 
 # hold_d 분리
 y_train = train_df[['hold_d']]
-x_train = train_df.drop(['hold_d'],axis=1)
+x_train = train_df.drop(['hold_d','iem_cd','act_id'],axis=1)
+x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=True)
+print(len(x_train), len(x_val), len(y_train), len(y_val))
 
 ai_model = Sequential([
-            InputLayer(input_shape=(19,)),
-            Dense(8, activation='relu', name='hidden_layer'),
-            Dense(1, activation='sigmoid', name='output_layer')]
-            )
+            InputLayer(input_shape=(17,)),
+            Dense(9, activation='relu', name='hidden_layer'),
+            #Dropout(0.1),
+            Dense(1, activation='sigmoid', name='output_layer')
+            ])
 
-ai_model.compile(loss='binary_crossentropy',optimizer='RMSprop',metrics=['accuracy'])
-ai_res = ai_model.fit(x_train,y_train,epochs=100,batch_size=b_size)
+ai_model.compile(loss='categorical_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
+ai_res = ai_model.fit(x_train, y_train, epochs=10, batch_size=b_size, validation_data=(x_val,y_val))
