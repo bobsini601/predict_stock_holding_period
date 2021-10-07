@@ -7,6 +7,7 @@ from sklearn import preprocessing  # 데이터를 전처리하기 위한 라이�
 from sklearn.model_selection import train_test_split
 import sys, os
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Warning 무시
 sys.path.append(os.pardir)
 from sklearn.preprocessing import *
 
@@ -74,7 +75,8 @@ merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 #merge_test=pd.merge(merge_data,stk_hld_test,on=['act_id','iem_cd'])
 
 
-# 결합한 train data를 csv파일로 저장
+# 계좌ID 컬럼 삭제 후,결합한 train data를 csv파일로 저장
+merge_train = merge_train.drop(['act_id'], axis=1)
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
 
