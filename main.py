@@ -7,15 +7,27 @@ from sklearn import preprocessing  # 데이터를 전처리하기 위한 라이�
 from sklearn.model_selection import train_test_split
 import sys, os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'    # Warning 무시
 sys.path.append(os.pardir)
 from sklearn.preprocessing import *
+
 
 ''' csv 파일을 load해서 반환하는 함수 '''
 def load_CSV(file):
     data = []
     data = pd.read_csv(file)
     return data
+
+def plot_data(x,y,str1,str2):
+    plt.scatter(x, y)
+    plt.title("Scatter Plot of the data")
+    plt.xlabel(str1)
+    plt.ylabel(str2)
+    plt.show()
+
+def plot_hist(x,label):
+    plt.hist(x)
+    plt.xlabel(label)
+    plt.show()
 
 
 ''' 각 파일의 이름 변수에 data 로드 '''
@@ -24,7 +36,7 @@ iem_info = load_CSV('iem_info_20210902.csv')  # 종목 정보 _주식 종목에 
 stk_bnc_hist = load_CSV('stk_bnc_hist.csv')  # 국내 주식 잔고 이력 _일별 종목 잔고수량 및 금액, 액면가 정보
 stk_hld_test = load_CSV('stk_hld_test.csv')  # 국내 주식 보유 기간(train) _고객에게 제공되는 과거 국내주식 보유기간 데이터 (681,472건)
 stk_hld_train = load_CSV('stk_hld_train.csv')  # 국내 주식 보유 기간(test) _개발한 알고리즘 검증을 위한 문제지 (70,596건)
-
+submission=load_CSV('sample_submission.csv')
 
 ''' 필요없는 컬럼 추출 '''
 iem_info.drop(['iem_krl_nm'], axis=1, inplace=True) # '종목 한글 명' 삭제
@@ -52,14 +64,14 @@ stk_bnc_hist = pd.concat([stk_bnc_hist, bnc_hist_norm], axis=1)
 merge_cus_info=pd.merge(cus_info,stk_bnc_hist ,on='act_id')
 
 mcf_df=pd.DataFrame(merge_cus_info)
-#train_df.to_csv("merge_cus_info.csv",index=False)
+#mcf_df.to_csv("merge_cus_info.csv",index=False)
 
 
 # iem_cd를 기준으로 iem_info까지 결합 _ 총 3개 csv파일 결합
 merge_data=pd.merge(merge_cus_info,iem_info,on='iem_cd')
 
 merge_df=pd.DataFrame(merge_data)
-#test_df.to_csv("merge_data.csv",index=False)
+#merge_df.to_csv("merge_data.csv",index=False)
 
 
 
@@ -75,31 +87,46 @@ merge_test=merge_test[merge_test["byn_dt"]==merge_test["bse_dt"]]
 #merge_test=pd.merge(merge_data,stk_hld_test,on=['act_id','iem_cd'])
 
 
-# 계좌ID 컬럼 삭제 후,결합한 train data를 csv파일로 저장
-merge_train = merge_train.drop(['act_id'], axis=1)
+# 결합한 train data를 csv파일로 저장
 train_df=pd.DataFrame(merge_train)
 #train_df.to_csv("train_data.csv",index=False)
 
 
 # 결합한 test data를 csv 파일로 저장
 test_df = pd.DataFrame(merge_test)
-#test_df.to_csv("test_data.csv",index=False)
-
 
 b_size = 60000 # 대량의 data를 처리하기 위한 mini batch
+
+
 
 # hold_d 분리
 y_train = train_df[['hold_d']]
 x_train = train_df.drop(['hold_d','iem_cd','act_id'],axis=1)
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.25, random_state=True)
-print(len(x_train), len(x_val), len(y_train), len(y_val))
+
 
 ai_model = Sequential([
             InputLayer(input_shape=(17,)),
             Dense(9, activation='relu', name='hidden_layer'),
-            #Dropout(0.1),
             Dense(1, activation='sigmoid', name='output_layer')
             ])
 
 ai_model.compile(loss='categorical_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
 ai_res = ai_model.fit(x_train, y_train, epochs=10, batch_size=b_size, validation_data=(x_val,y_val))
+
+
+test_df=test_df.drop(['act_id','iem_cd','submit_id','hist_d','hold_d'],axis=1)
+test_data=np.array(test_df)
+
+models=[]
+models.append(ai_model)
+
+result = []
+for i in models:
+    result.append(i.predict(test_data))
+
+predict = np.mean(result, axis = 0)
+print(predict)
+submission["hold_d"] = np.round(predict)
+print(submission)
+submission.to_csv("dacon_baseline.csv", index = False)
